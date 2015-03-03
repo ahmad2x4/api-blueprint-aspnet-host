@@ -70,8 +70,15 @@
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\NameValueCollectionExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="IRequestHandler.cs" />
+    <Compile Include="IRequestWrapper.cs" />
+    <Compile Include="IResponseWrapper.cs" />
     <Compile Include="Modules\BlueprintModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestHandlers\MockHandler.cs" />
+    <Compile Include="RequestHandlers\DiscoveryHandler.cs" />
+    <Compile Include="RequestWrapper.cs" />
+    <Compile Include="ResponseWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Web.config" />

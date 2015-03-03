@@ -8,7 +8,7 @@ This API example demonstrates how to define a resource with multiple actions.
 + [This: Raw API Blueprint](https://raw.github.com/apiaryio/api-blueprint/master/examples/2.%20Resource%20and%20Actions.md)
 + [Next: Named Resource and Actions](3.%20Named%20Resource%20and%20Actions.md)
 
-# /message
+# /message/{id}
 This is our [resource](http://www.w3.org/TR/di-gloss/#def-resource). It is defined by its [URI](http://www.w3.org/TR/di-gloss/#def-uniform-resource-identifier) or, more precisely, by its [URI Template](http://tools.ietf.org/html/rfc6570).
 
 This resource has no actions specified but we will fix that soon. 
