@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Web;
 
 namespace Blueprint.Aspnet.Host
@@ -16,8 +14,11 @@ namespace Blueprint.Aspnet.Host
             this.HttpMethod = request.HttpMethod;
             this.ContentType = request.ContentType;
             this._body = ReadBodyToEnd(request);
+            this.Url = request.Url;
             //headers
         }
+
+        public Uri Url { get; set; }
 
         private string ReadBodyToEnd(HttpRequest request)
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
 
 namespace Blueprint.Aspnet.Host
 {
@@ -10,6 +11,7 @@ namespace Blueprint.Aspnet.Host
         string ContentType { get; set; }
 
         string Body { get; set; }
+        Uri Url { get; set; }
     }
 
 }

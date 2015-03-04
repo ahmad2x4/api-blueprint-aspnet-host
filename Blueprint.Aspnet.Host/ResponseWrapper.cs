@@ -1,40 +1,41 @@
-﻿namespace Blueprint.Aspnet.Host
+﻿using System.Web;
+
+namespace Blueprint.Aspnet.Host
 {
     class ResponseWrapper : IResponseWrapper
     {
+        private readonly HttpResponse _response;
 
+        public ResponseWrapper(HttpResponse response)
+        {
+            _response = response;
+        }
 
         public void End()
         {
-            throw new System.NotImplementedException();
+            _response.End();
         }
 
 
         public void Clear()
         {
-            throw new System.NotImplementedException();
+            _response.Clear();
         }
 
         public int StatusCode
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-                throw new System.NotImplementedException();
-            }
+            get { return _response.StatusCode; }
+            set { _response.StatusCode = value; }
         }
 
-        public object AppendHeader(string p1, string p2)
+        public void AppendHeader(string name, string value)
         {
-            throw new System.NotImplementedException();
+            _response.AppendHeader(name, value);
         }
 
         public void Write(string p)
         {
-            throw new System.NotImplementedException();
+            _response.Write(p);
         }
     }
 }

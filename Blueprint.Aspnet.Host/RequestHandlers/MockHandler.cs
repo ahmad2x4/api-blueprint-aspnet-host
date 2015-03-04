@@ -1,5 +1,4 @@
 ﻿using System.Collections.Specialized;
-using Blueprint.Aspnet.Host.Modules;
 using DeepEqual.Syntax;
 using Newtonsoft.Json;
 using snowcrashCLR;
@@ -11,10 +10,11 @@ namespace Blueprint.Aspnet.Host.RequestHandlers
 {
     public class MockHandler : IRequestHandler
     {
-        private Resource _resource;
-        public MockHandler(Resource resource)
+        private readonly Resource _resource;
+        public MockHandler(Resource resource, IRoute route)
         {
             _resource = resource;
+            Route = route;
         }
 
         public IRoute Route { get; private set; }

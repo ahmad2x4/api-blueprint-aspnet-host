@@ -4,7 +4,9 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Web;
+using Blueprint.Aspnet.Host.RequestHandlers;
 using snowcrashCLR;
+using Blueprint.Aspnet.Host.Extensions;
 
 namespace Blueprint.Aspnet.Host.Modules
 {
@@ -12,6 +14,8 @@ namespace Blueprint.Aspnet.Host.Modules
     {
         IEnumerable<snowcrashCLR.Blueprint> _blueprints;
         IEnumerable<IRequestHandler> _reqestHandlers;
+        private IRequestRouter _requestRouter = new RequestRouter();
+
 
         public String ModuleName
         {
@@ -21,8 +25,24 @@ namespace Blueprint.Aspnet.Host.Modules
         public void Init(HttpApplication application)
         {
             LoadBlueprints();
+            ConfigureRoutes();
             application.BeginRequest += Application_BeginRequest;
             application.EndRequest += Application_EndRequest;
+        }
+
+        private void ConfigureRoutes()
+        {
+            var result = (from b in _blueprints
+                from g in b.GetResourceGroupsCs()
+                from r in g.GetResourcesCs()
+                select r).ToDictionary(resource => (IRoute) new Route(resource.uriTemplate),
+                    resource => (IRequestHandler) new MockHandler(resource, new Route(resource.uriTemplate)), new Route.UrlTemplateEqualityComparer());
+
+            _requestRouter
+                .Configure()
+                .WithRoutes(result)
+                .WithRoute(new Route("/"), new DiscoveryHandler(_blueprints, new Route("/")));
+
         }
 
         private void LoadBlueprints()
@@ -56,7 +76,7 @@ namespace Blueprint.Aspnet.Host.Modules
                 {
                     var contents = reader.ReadToEnd();
                     snowcrashCLR.Blueprint blueprint;
-                    snowcrashCLR.Result result;
+                    Result result;
                     SnowCrashCLR.parse(contents, out blueprint, out result);
                     if (blueprint != null)
                     {
@@ -78,33 +98,12 @@ namespace Blueprint.Aspnet.Host.Modules
         private void ProcessRequest(HttpContext context)
         {
             LoadBlueprints();
-            var request = context.Request;
-            var response = context.Response;
+            var request = new RequestWrapper(context.Request);
+            var response = new ResponseWrapper(context.Response);
 
-            var matchingResources = from b in _blueprints
-                from g in b.GetResourceGroupsCs()
-                from r in g.GetResourcesCs()
-                where r.uriTemplate == request.Path
-                select r;
-
-            // we will just take the first resource that matches the path
-            var resource = matchingResources.FirstOrDefault();
-
-            if (resource != null)
-            {
-                //HandleRequest(request, response, resource);
-            }
+            _requestRouter.Route(request)
+                .Handle(request,response);
         }
-    }
-
-    /*
-     * rh.configure.with(reuqest)
-     * rh.configure.with(reuqest[]).unhandled
-     * */
-
-    public interface IRoute
-    {
-        string UrlTemplate { get; }
     }
 
     public interface IRouterConfiguration
@@ -112,24 +111,44 @@ namespace Blueprint.Aspnet.Host.Modules
         IDictionary<IRoute, IRequestHandler> Routes { get; }
     }
 
-    public static class RouteExtensions
+    class RouterConfiguration : IRouterConfiguration
     {
-        public static IRouterConfiguration WithRoute(this IRouterConfiguration config, IRoute route, IRequestHandler handler)
+        public RouterConfiguration()
         {
-            return config;
+            Routes = new Dictionary<IRoute, IRequestHandler>();
         }
 
-        public static IRouterConfiguration WithRoutes(this IRouterConfiguration config, IDictionary<IRoute, IRequestHandler> handlerPairs)
-        {
-            return config;
-        }
-}
+        public IDictionary<IRoute, IRequestHandler> Routes { get; private set; }
+    }
 
     public interface IRequestRouter
     {
         IRouterConfiguration Routes { get; }
 
         IRouterConfiguration Configure();
-        
+
+        IRequestHandler Route(IRequestWrapper request);
+
+    }
+
+
+    class RequestRouter : IRequestRouter
+    {
+        private IRouterConfiguration _routerConfiguration;
+        public IRouterConfiguration Routes { get; private set; }
+
+        public RequestRouter()
+        {
+            _routerConfiguration = new RouterConfiguration();
+        }
+
+        public IRouterConfiguration Configure()
+        {
+            return _routerConfiguration;
+        }
+        public IRequestHandler Route(IRequestWrapper request)
+        {
+            return _routerConfiguration.Routes[new Route(request.Url.PathAndQuery)];
+        }
     }
 }

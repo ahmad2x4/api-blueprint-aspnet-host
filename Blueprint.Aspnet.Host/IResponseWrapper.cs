@@ -14,7 +14,7 @@ namespace Blueprint.Aspnet.Host
 
         int StatusCode { get; set; }
 
-        object AppendHeader(string p1, string p2);
+        void AppendHeader(string p1, string p2);
 
         void Write(string p);
     }
